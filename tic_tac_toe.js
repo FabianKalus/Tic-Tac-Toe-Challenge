@@ -1,6 +1,3 @@
-
-
-
 // create a 2D array to represent the game board
 let board = [
     [' ', ' ', ' '],
@@ -15,10 +12,26 @@ let gameDraw = false
 let inputCorrect = true;
 let fieldFilled = false;
 let movesCounter = 0;
+let inputCounter = 0;
 let showScore = false;
+let showRules = false;
 let xWon = 0;
 let oWon = 0;
 let endedDraw = 0;
+let rules = `We play the game with the official rules and no modifications:
+- X places its mark first in the first round
+- The looser of the last game starts the game, which is then
+- played in an endless alternating order
+- Players must mark its position within the nine spaces
+- The first player to get 3 of her marks in a row (up, down,
+- across, or diagonally) is the winner
+- When all 9 squares are full, the game is over. If no player has 3
+- marks in a row, the game ends in a tie. X starts the next game
+
+Keycode:
+"r" = show rules
+"p" = show stats
+"e" = end the game`;
 
 // adds a modul (readline) that allows line by line reading 
 const readline = require('readline');
@@ -27,40 +40,135 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
-// adds a keylistener
-readline.emitKeypressEvents(process.stdin);
-process.stdin.setRawMode(true);
-process.stdin.on('keypress', (key) => {
-    // if the key p is pressed the stats are logged in the console and showScore will be true.
-    if (key === 'p') {
-        showScore = true;
+// starts the game at the beginning
+playGame();
+
+// start the funktion to play the game. this functions is looped through inner functions until the game is not finished
+function playGame() {
+
+    // before the first round it will be explained where to find the rules and print an empty board
+    firstRound();
+
+    // ask the player in the console at which position she / he will set the mark
+    rl.question(currentPlayer + ': ' + 'Please enter the position of your mark (Row:Column):', (input) => {
+
+        if (!showScore) {
+            // checks if the entered numbers are correct 
+            checkInput(input);
+
+            if (inputCorrect) {
+                // take numbers from the input and sub 1 because the arrays starts by 0 and not 1.
+                let row = input[0] - 1;
+                let col = input[2] - 1;
+
+                // update Board
+                updateBoard(row, col);
+
+                if (!fieldFilled) {
+                    // print game board
+                    printBoard();
+
+                    // checks for win and draw
+                    checkWinAndDraw();
+
+                    // loop the game until it´s finised
+                    gameLoop();
+                };
+            };
+        };
+    });
+};
+
+// before the first round it will be explained where to find the rules and print an empty board.
+// inputCounter if the player makes a wrong input in the first round
+function firstRound() {
+    if (movesCounter === 0 && inputCounter === 0) {
         console.clear();
-        console.log(`Stats: X-wins: ${xWon}, O-wins: ${oWon}, draw: ${endedDraw}
-Press "Enter" to continue`);
-    } 
-    // if the key enter is pressed while showScore is true, score whill be hide and the game continue
-    else if (key === '\r' && showScore) {
-        showScore = false;
-        console.clear();
-        rl.clearLine(-1);
-        playGame();
-    } 
-    // if the key e is pressed during the game the game will end. 
-    else if (key === 'e') {
-        process.exit();
-    }
-});
+        console.log(`If you want to look up the rules, you can press "r" during the game to show them.`);
+        inputCounter++
+        printBoard();
+    };
+};
 
 // print the board based on the variable board in the console
 function printBoard() {
     console.log(' ');
     console.log('  ' + board[0][0] + ' | ' + board[0][1] + ' | ' + board[0][2]);
-    console.log(' -----------')
+    console.log(' -----------');
     console.log('  ' + board[1][0] + ' | ' + board[1][1] + ' | ' + board[1][2]);
-    console.log(' -----------')
+    console.log(' -----------');
     console.log('  ' + board[2][0] + ' | ' + board[2][1] + ' | ' + board[2][2]);
     console.log(' ');
-}
+};
+
+// check the input from rl.question, where player wants to set a mark
+function checkInput(input) {
+
+    //checks if string length is correct
+    checkInputLength(input);
+
+    if (inputCorrect) {
+        //checks if the numbers are correct. If input.length is correct to avoid double error messages
+        checkInputFormat(input);
+    };
+};
+
+//checks if string length is correct
+function checkInputLength(input) {
+    if (input.length !== 3) {
+        console.clear();
+        console.error(`The inserted field is not valid. Try again:
+Example: "2:2" places the X in the  middle center field`);
+        inputCorrect = false;
+        printBoard();
+        playGame();
+    } else {
+        inputCorrect = true;
+    };
+};
+
+//checks if the numbers are correct. If input.length is correct to avoid double error messages
+function checkInputFormat(input) {
+    // checks the first number of the input if it is 1, 2 or 3. If not, it will return an error and ask the question again
+    if (input[0] != 1 && input[0] != 2 && input[0] != 3) {
+        console.clear();
+        console.error(`The inserted field is not valid. Try again:
+Example: "2:2" places the X in the  middle center field`);
+        inputCorrect = false;
+        printBoard();
+        playGame();
+    }
+    // checks the second number of the input if it is 1, 2 or 3. If not, it will return an error and ask the question again
+    else if (input[2] != 1 && input[2] != 2 && input[2] != 3) {
+        console.clear();
+        console.error(`The inserted field is not valid. Try again:
+Example: "2:2" places the X in the  middle center field`);
+        inputCorrect = false;
+        printBoard();
+        playGame();
+    }
+    // add later when testing is finished
+    // else if (input[1] != ':') {
+    // console.clear();
+    //       console.error(`The inserted field is not valid. Try again:
+    //    Example: "2:2" places the X in the  middle center field`);
+    //     inputCorrect = false;
+    //     printBoard();
+    //     playGame();
+    // }
+
+    // set input correct so the rl.question can continue.
+    else {
+        inputCorrect = true;
+    };
+};
+
+function checkWinAndDraw() {
+    // check for win
+    checkWin();
+    //check for draw
+    checkDraw();
+};
 
 // function to check if a player has won the game
 function checkWin() {
@@ -85,197 +193,19 @@ function checkWin() {
         gameWon = true;
         return;
     };
-}
-
-// ask the player if he / she wants to start a new game. the text is a variable because the game can have ended draw and with someone wins
-function newGame(text) {
-    rl.question(text, () => {
-        resetEverything();
-        playGame();
-    });
-}
+};
 
 //check if the game is draw based on the movesCounter
 function checkDraw() {
     movesCounter++
     if (movesCounter === 9 && !gameWon) {
         gameDraw = true;
-    }
-}
-
-//reset everything to start a new game. except the statistics and the currentplayer
-function resetEverything() {
-    gameWon = false;
-    gameDraw = false;
-    switchPlayer();
-    console.clear();
-    movesCounter = 0;
-    board = [
-        [' ', ' ', ' '],
-        [' ', ' ', ' '],
-        [' ', ' ', ' ']
-    ];
-}
-
-
-
-
-
-// start the funktion to play the game. this functions is looped through inner functions until the game is not finished
-function playGame() {
-
-    // print an empty board to start with
-    if (movesCounter === 0) {
-        console.clear();
-        printBoard();
-    }
-
-    // ask the player in the console at which position she / he will set the mark
-    rl.question(currentPlayer + ': ' + 'Please enter the position of your mark (Row:Column):', (input) => {
-
-        if (!showScore) {
-            // checks if the entered numbers are correct 
-            checkInput(input);
-
-            if (inputCorrect) {
-                // take numbers from the input and sub 1 because the arrays starts by 0 and not 1.
-                let row = input[0] - 1;
-                let col = input[2] - 1;
-
-                //clear the board
-                console.clear();
-
-                // update Board
-                updateBoard(row, col);
-
-                if (!fieldFilled) {
-                    // print game board
-                    printBoard();
-
-                    // check for win
-                    checkWin();
-
-                    //check for draw
-                    checkDraw();
-
-                    // loop the game until it´s finised
-                    if (!gameWon && !gameDraw) {
-
-                        // switch player
-                        switchPlayer();
-
-                        playGame();
-                    } else if (!gameWon && gameDraw) {
-                         //update the stats
-                        updateStats();
-
-                        // send the message that the game ended in a draw and give the oppurtiunity to start a new round
-                        newGame(`The game ended in a draw.
-Stats: X-wins: ${xWon}, O-wins: ${oWon}, draw: ${endedDraw}                        
-Do you want to start a new game?`);
-
-                    } else {
-                         //update the stats
-                        updateStats();
-
-                        // send the message who won the game and give the oppurtiunity to start a new round
-                        newGame(`${currentPlayer}: Won the game. 
-Stats: X-wins: ${xWon}, O-wins: ${oWon}, draw: ${endedDraw}
-Do you want to start a new game?`);
-                    };
-                };
-            };
-        };
-    });
-};
-
-// update the stats. Add 1 to oWon, xWon or endeddraw variables
-function updateStats() {
-
-    if (gameWon) {
-        if (currentPlayer === 'X') {
-            xWon++;
-        } else {
-            oWon++;
-        }
-    } else if(gameDraw && !gameWon) {
-        endedDraw++;
-    }
-}
-
-// switch players
-function switchPlayer() {
-    if (currentPlayer === 'X') {
-        currentPlayer = 'O';
-    }
-    else {
-        currentPlayer = 'X';
-    };
-};
-
-function checkInput(input) {
-
-    //checks if string length is correct
-    checkInputLength(input);
-
-    if (inputCorrect) {
-        //checks if the numbers are correct
-        checkInputFormat(input);
-    };
-};
-
-function checkInputLength(input) {
-    if (input.length !== 3) {
-        console.clear();
-        console.error(`The inserted field is not valid. Try again:
-Example: "2:2" places the X in the  middle center field`);
-        inputCorrect = false;
-        printBoard();
-        playGame();
-    } else {
-        inputCorrect = true;
-    };
-};
-
-function checkInputFormat(input) {
-    // checks the first number of the input if it is 1, 2 or 3. If not, it will return an error and ask the question again
-    if (input[0] != 1 && input[0] != 2 && input[0] != 3) {
-        console.clear();
-        console.error(`The inserted field is not valid. Try again:
-Example: "2:2" places the X in the  middle center field`);
-        inputCorrect = false;
-        printBoard();
-        playGame();
-    }
-
-    // checks the second number of the input if it is 1, 2 or 3. If not, it will return an error and ask the question again
-    else if (input[2] != 1 && input[2] != 2 && input[2] != 3) {
-        console.clear();
-        console.error(`The inserted field is not valid. Try again:
-Example: "2:2" places the X in the  middle center field`);
-        inputCorrect = false;
-        printBoard();
-        playGame();
-    }
-
-    // add later when testing is finished
-    // else if (input[1] != ':') {
-        // console.clear();
-    //       console.error(`The inserted field is not valid. Try again:
-     //    Example: "2:2" places the X in the  middle center field`);
-    //     inputCorrect = false;
-    //     printBoard();
-    //     playGame();
-    // }
-
-    // set input correct so the rl.question can continue.
-    else {
-        inputCorrect = true;
     };
 };
 
 // update the board and checks if the field is already taken. If it´s taken the player has to try it again. 
 function updateBoard(row, col) {
+    console.clear();
     if (board[row][col] != ' ') {
         console.clear();
         console.error('The inserted field is already taken. Try again:');
@@ -289,9 +219,120 @@ function updateBoard(row, col) {
     };
 };
 
+// loop the game until it´s finised
+function gameLoop() {
+    if (!gameWon && !gameDraw) {
+        // switch player
+        switchPlayer();
+        playGame();
+    } else if (!gameWon && gameDraw) {
+        //update the stats
+        updateStats();
+        // send the message that the game ended in a draw and give the oppurtiunity to start a new round
+        newGame(`The game ended in a draw.
+Stats: X-wins: ${xWon}, O-wins: ${oWon}, draw: ${endedDraw}                        
+Do you want to start a new game (Press "Enter")? `);
 
-// starts the game at the beginning
-playGame();
+    } else {
+        //update the stats
+        updateStats();
+        // send the message who won the game and give the oppurtiunity to start a new round
+        newGame(`${currentPlayer}: Won the game. 
+Stats: X-wins: ${xWon}, O-wins: ${oWon}, draw: ${endedDraw}
+Do you want to start a new game? (Press "Enter")`);
+    };
+};
+
+// switch players
+function switchPlayer() {
+    if (currentPlayer === 'X') {
+        currentPlayer = 'O';
+    }
+    else {
+        currentPlayer = 'X';
+    };
+};
+
+// update the stats. Add 1 to oWon, xWon or endeddraw variables
+function updateStats() {
+    if (gameWon) {
+        if (currentPlayer === 'X') {
+            xWon++;
+        } else {
+            oWon++;
+        }
+    } else if (gameDraw && !gameWon) {
+        endedDraw++;
+    };
+};
+
+// ask the player if he / she wants to start a new game. the text is a variable because the game can have ended draw and with someone wins
+function newGame(text) {
+    rl.question(text, () => {
+        resetEverything();
+        playGame();
+    });
+};
+
+//reset everything to start a new game. except the statistics and the currentplayer
+function resetEverything() {
+    gameWon = false;
+    gameDraw = false;
+    switchPlayer();
+    console.clear();
+    movesCounter = 0;
+    inputCounter = 0;
+    board = [
+        [' ', ' ', ' '],
+        [' ', ' ', ' '],
+        [' ', ' ', ' ']
+    ];
+};
+
+// adds a keylistener
+readline.emitKeypressEvents(process.stdin);
+process.stdin.setRawMode(true);
+process.stdin.on('keypress', (key) => {
+    // if the key p is pressed the stats are logged in the console and showScore will be true.
+    if (key === 'p') {
+        showScore = true;
+        console.clear();
+        console.log(`Stats: X-wins: ${xWon}, O-wins: ${oWon}, draw: ${endedDraw}
+Press "Enter" to continue`);
+    }
+    // if the key enter is pressed while showScore is true, score will be hide and the game continue
+    else if (key === '\r' && showScore) {
+        showScore = false;
+        console.clear();
+        rl.clearLine(-1);
+        printBoard();
+        playGame();
+    }
+    // if the key r is pressed the rules are logged in the console and showRules will be true.
+    if (key === 'r') {
+        showScore = true;
+        console.clear();
+        console.log(`${rules}
+
+Press "Enter" to continue`);
+    }
+    // if the key enter is pressed while showRules is true, rules will be hide and the game continue
+    else if (key === '\r' && showRules) {
+        showRules = false;
+        console.clear();
+        rl.clearLine(-1);
+        printBoard();
+        playGame();
+    }
+    // if the key e is pressed during the game the game will end. 
+    else if (key === 'e') {
+        process.exit();
+    }
+});
+
+
+
+
 
 
 
