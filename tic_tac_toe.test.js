@@ -285,7 +285,7 @@ describe('updateStats', () => {
         expect(xWon).toBe(1);
         expect(oWon).toBe(1);
     });
-    it('should increment xWon and oWon to be 1, because every player wins one round', () => {
+    it('should increment endedDraw by 1, because the movecounter > 8', () => {
         // Act
             for (let i = 0; i < 9; i++) {
                 checkDraw();
