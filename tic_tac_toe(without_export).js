@@ -18,6 +18,8 @@ let showRules = false;
 let xWon = 0;
 let oWon = 0;
 let endedDraw = 0;
+let coordinatColumn;
+let coordinatRow;
 let gameVSComputer = false;
 let computerDidTurn = false;
 let rules = `We play the game with the official rules and no modifications:
@@ -46,20 +48,20 @@ const rl = readline.createInterface({
 chooseOpponent();
 
 // ask the player if he wants to play a computer or a human. Loop the question if the answer is not c or h
-function chooseOpponent(){
+function chooseOpponent() {
     rl.question('You want to play against a computer (c) or a human (h):', (input) => {
-        if(input === 'c'){
+        if (input === 'c') {
             gameVSComputer = true;
             playVsComputer();
         }
-        else if(input === 'h'){
+        else if (input === 'h') {
             gameVSComputer = false;
             playVsComputer();
         } else {
             console.clear();
             console.log('The input wasn´t correct. Try again.');
-            chooseOpponent();          
-        };   
+            chooseOpponent();
+        };
     });
 };
 
@@ -304,6 +306,7 @@ function newGame(text) {
 function resetEverything() {
     gameWon = false;
     gameDraw = false;
+    computerDidTurn = false;
     switchPlayer();
     console.clear();
     movesCounter = 0;
@@ -371,12 +374,12 @@ function playVsComputer() {
         // computerWinandLose checks for O if the computer has an possibilty to win
         computerWinandLose('O');
         if (!computerDidTurn) {
-             // computerWinandLose checks for X if the player has an possibilty to win
+            // computerWinandLose checks for X if the player has an possibilty to win
             computerWinandLose('X');
         }
         if (!computerDidTurn) {
             // create random coordinats and upload them to the board. If the field is already marked, the function is looped until it find an unmarked field. 
-           creatRandomCoordinats();
+            creatRandomCoordinats();
         };
 
         if (!fieldFilled) {
@@ -393,9 +396,9 @@ function playVsComputer() {
 };
 
 //  create random coordinats and upload them to the board. If the field is already marked, the function is looped until it find an unmarked field. 
-function creatRandomCoordinats() { 
-    let coordinatRow = Math.floor(Math.random() * 3);
-    let coordinatColumn = Math.floor(Math.random() * 3);
+function creatRandomCoordinats() {
+    coordinatRow = Math.floor(Math.random() * 3);
+    coordinatColumn = Math.floor(Math.random() * 3);
 
     if (board[coordinatRow][coordinatColumn] !== ' ') {
         creatRandomCoordinats();
@@ -410,14 +413,14 @@ function computerWinandLose(player) {
         // check for horizontal wins
         checkHorizontal(i, player);
         // check for vertical wins
-       checkVertical(i, player);
+        checkVertical(i, player);
     };
     // check for diagonal wins
     checkDiagonal(player);
 };
 
- // check for horizontal wins
-function checkHorizontal(i, player){
+// check for horizontal wins
+function checkHorizontal(i, player) {
     if (board[i][0] === player && board[i][2] === player && board[i][1] === ' ' && !computerDidTurn) {
         updateBoard(i, 1);
         computerDidTurn = true;
@@ -435,8 +438,8 @@ function checkHorizontal(i, player){
     };
 };
 
-  // check for vertical wins
-function checkVertical(i, player){
+// check for vertical wins
+function checkVertical(i, player) {
     if (board[0][i] === player && board[2][i] === player && board[1][i] === ' ' && !computerDidTurn) {
         updateBoard(1, i)
         computerDidTurn = true;
@@ -454,8 +457,8 @@ function checkVertical(i, player){
     };
 }
 
- // check for diagonal wins
-function checkDiagonal(player){
+// check for diagonal wins
+function checkDiagonal(player) {
     if (board[0][0] === player && board[1][1] === player && board[2][2] === ' ' && !computerDidTurn) {
         updateBoard(2, 2)
         computerDidTurn = true;

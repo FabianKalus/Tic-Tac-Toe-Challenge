@@ -1,15 +1,13 @@
+import { clear } from 'console';
+import exp from 'constants';
 import { it, expect } from 'vitest';
-import { readlineSync } from 'readline-sync';
 
-
+// first and second line functions / third line varibles
 import {
-    checkInputLength, inputCorrect, checkInputFormat, checkWin, checkDraw, updateBoard, resetEverything, switchPlayer, updateStats,
-    gameWon, board, gameDraw, currentPlayer, fieldFilled, oWon, xWon, endedDraw, rl, newGame, printBoard
+    checkInputLength, checkInputFormat, checkWin, checkDraw, updateBoard, resetEverything, switchPlayer,
+    updateStats, newGame, printBoard, creatRandomCoordinats, checkHorizontal, checkVertical, checkDiagonal,
+    inputCorrect, gameWon, board, gameDraw, currentPlayer, fieldFilled, oWon, xWon, endedDraw, rl, coordinatColumn, coordinatRow
 } from './tic_tac_toe';
-
-
-
-
 
 const assert = require('assert');
 const sinon = require('sinon');
@@ -183,45 +181,63 @@ describe('checkInputFormat', () => {
 // user storie 3
 
 describe('switchPlayer', () => {
-    it('should switch currentPlayer from X to O', () => {
-        
-        expect(currentPlayer).toBe('O');
-    });
-
     it('should switch currentPlayer from O to X', () => {
+        // Act
         switchPlayer();
+
+        // Assert
         expect(currentPlayer).toBe('X');
     });
 });
 
 describe('checkWin', () => {
     it('should detect horizontal win', () => {
+        // Arragne
         board[0] = ['X', 'X', 'X'];
+
+        // Act
         checkWin();
+
+        // Assert
         expect(gameWon).toBe(true);
     });
 
     it('should detect vertical win', () => {
+        // Arrange
         for (let i = 0; i < 3; i++) {
             board[i][0] = 'O';
         }
+
+        // Act
         checkWin();
+
+        // Assert
         expect(gameWon).toBe(true);
     });
 
     it('should detect diagonal win (top-left to bottom-right)', () => {
+        // Arrange
         for (let i = 0; i < 3; i++) {
             board[i][i] = 'X';
         }
+
+        // Act
         checkWin();
+
+        // Assert
         expect(gameWon).toBe(true);
     });
 
     it('should detect diagonal win (top-right to bottom-left)', () => {
+        // Arrange
         for (let i = 0; i < 3; i++) {
             board[i][2 - i] = 'O';
         }
+
+        // Act
         checkWin();
+
+        // Assert
         expect(gameWon).toBe(true);
     });
 });
@@ -249,15 +265,16 @@ describe('checkDraw', () => {
 
 describe('newGame', () => {
     it('should call rl.question with the correct text', () => {
-        //Act
+        //Arange
         const expectedText = 'Are you ready to start a new game?';
         const spy = sinon.spy(rl, 'question');
 
-        // Assert
+        // Act
         newGame(expectedText);
 
-        // Act
+        // Assert
         assert.ok(spy.calledWith(expectedText))
+        assert.ok(spy.calledOnce)
     });
 });
 
@@ -266,7 +283,7 @@ describe('newGame', () => {
 describe('updateStats', () => {
     it('should increment xWon and oWon to be 1, because every player wins one round', () => {
         // Act
-        for(let i = 0; i < 2; i++) {
+        for (let i = 0; i < 2; i++) {
             updateBoard(0, 0);
             switchPlayer();
             updateBoard(0, 1);
@@ -287,12 +304,615 @@ describe('updateStats', () => {
     });
     it('should increment endedDraw by 1, because the movecounter > 8', () => {
         // Act
-            for (let i = 0; i < 9; i++) {
-                checkDraw();
-            };
-            updateStats();
+        for (let i = 0; i < 9; i++) {
+            checkDraw();
+        };
+        updateStats();
 
         // Assert
         expect(endedDraw).toBe(1);
     })
+});
+
+
+// user storie 6
+
+describe('createRandomCoordinats', () => {
+    it('checks if the numbers are 0, 1 or 2 so that they can be filled in the gitter', () => {
+        // Act 
+        creatRandomCoordinats();
+
+        // Assert
+        expect(coordinatColumn).toBeGreaterThan(-1);
+        expect(coordinatRow).toBeGreaterThan(-1);
+        expect(coordinatColumn).toBeLessThan(3);
+        expect(coordinatRow).toBeLessThan(3);
+    });
+});
+
+describe('checkHorizontal', () => {
+    it('checks if it is the turn of the computer and there is a horzintal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = ['O', ' ', 'O'];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkHorizontal(0, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('  O | O | O');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a horzintal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', 'O', 'O'];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkHorizontal(0, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('  O | O | O');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a horzintal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = ['O', 'O', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkHorizontal(0, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('  O | O | O');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a horzintal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[1] = ['O', ' ', 'O'];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkHorizontal(1, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('  O | O | O');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a horzintal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[1] = [' ', 'O', 'O'];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkHorizontal(1, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('  O | O | O');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a horzintal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[1] = ['O', 'O', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkHorizontal(1, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('  O | O | O');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a horzintal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[2] = ['O', 'O', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkHorizontal(2, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('  O | O | O');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a horzintal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[2] = ['O', ' ', 'O'];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkHorizontal(2, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('  O | O | O');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a horzintal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[2] = [' ', 'O', 'O'];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkHorizontal(2, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('  O | O | O');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there in a horizontal line is not empty to not overwrite it', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[2] = ['X', 'O', 'O'];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkHorizontal(2, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    |   |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('  X | O | O');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+});
+
+describe('checkVertikal', () => {
+    it('checks if it is the turn of the computer and there is a vertikal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = ['O', ' ', ' '];
+        board[1] = ['O', ' ', ' '];
+        board[2] = [' ', ' ', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkVertical(0, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a vertikal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = ['O', ' ', ' '];
+        board[1] = [' ', ' ', ' '];
+        board[2] = ['O', ' ', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkVertical(0, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a vertikal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', ' ', ' '];
+        board[1] = ['O', ' ', ' '];
+        board[2] = ['O', ' ', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkVertical(0, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a vertikal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', 'O', ' '];
+        board[1] = [' ', 'O', ' '];
+        board[2] = [' ', ' ', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkVertical(1, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a vertikal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', 'O', ' '];
+        board[1] = [' ', ' ', ' '];
+        board[2] = [' ', 'O', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkVertical(1, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a vertikal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', ' ', ' '];
+        board[1] = [' ', 'O', ' '];
+        board[2] = [' ', 'O', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkVertical(1, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a vertikal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', ' ', 'O'];
+        board[1] = [' ', ' ', 'O'];
+        board[2] = [' ', ' ', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkVertical(2, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   | O');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    |   | O');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   | O');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a vertikal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', ' ', 'O'];
+        board[1] = [' ', ' ', ' '];
+        board[2] = [' ', ' ', 'O'];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkVertical(2, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   | O');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    |   | O');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   | O');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a vertikal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', ' ', ' '];
+        board[1] = [' ', ' ', 'O'];
+        board[2] = [' ', ' ', 'O'];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkVertical(2, 'O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   | O');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    |   | O');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   | O');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+});
+
+describe('checkDiagonal', () => {
+    it('checks if it is the turn of the computer and there is a diagonal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = ['O', ' ', ' '];
+        board[1] = [' ', 'O', ' '];
+        board[2] = [' ', ' ', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkDiagonal('O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   | O');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a diagonal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = ['O', ' ', ' '];
+        board[1] = [' ', ' ', ' '];
+        board[2] = [' ', ' ', 'O'];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkDiagonal('O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   | O');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a diagonal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', ' ', ' '];
+        board[1] = [' ', 'O', ' '];
+        board[2] = [' ', ' ', 'O'];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkDiagonal('O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   | O');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a diagonal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', ' ', 'O'];
+        board[1] = [' ', 'O', ' '];
+        board[2] = [' ', ' ', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkDiagonal('O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   | O');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a diagonal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', ' ', ' '];
+        board[1] = [' ', 'O', ' '];
+        board[2] = ['O', ' ', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkDiagonal('O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   | O');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('checks if it is the turn of the computer and there is a diagonal way to win to fill the blank', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = [' ', ' ', 'O'];
+        board[1] = [' ', ' ', ' '];
+        board[2] = ['O', ' ', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkDiagonal('O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('    |   | O');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('  O |   |  ');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
+    it('if there are two ways to win just set on mark', () => {
+        // Arrange
+        resetEverything();
+        switchPlayer();
+        board[0] = ['O', ' ', 'O'];
+        board[1] = [' ', 'O', ' '];
+        board[2] = [' ', ' ', ' '];
+        const spy = sinon.spy(console, 'log');
+
+        // Act 
+        checkDiagonal('O');
+        printBoard();
+
+        // Assert
+        expect(spy.getCall(0).args[0]).toBe(' ');
+        expect(spy.getCall(1).args[0]).toBe('  O |   | O');
+        expect(spy.getCall(2).args[0]).toBe(' -----------');
+        expect(spy.getCall(3).args[0]).toBe('    | O |  ');
+        expect(spy.getCall(4).args[0]).toBe(' -----------');
+        expect(spy.getCall(5).args[0]).toBe('    |   | O');
+        expect(spy.getCall(6).args[0]).toBe(' ');
+        spy.restore();
+    });
 });

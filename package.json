@@ -19,12 +19,11 @@
   },
   "homepage": "https://github.com/FabianKalus/Tic-Tac-Toe-Challenge#readme",
   "devDependencies": {
+    "babel-plugin-transform-remove-export": "^1.0.0",
     "sinon": "^15.0.1",
     "vitest": "^0.27.2"
   },
   "dependencies": {
-    "readline-sync": "^1.4.10",
-    "test-console": "^2.0.0",
-    "ts-node": "^10.9.1"
+    "test-console": "^2.0.0"
   }
 }

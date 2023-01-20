@@ -11,13 +11,17 @@ export let gameWon = false;
 export let gameDraw = false
 export let inputCorrect = true;
 export let fieldFilled = false;
-export let movesCounter = 0;
-let inputCounter = 0;
+let movesCounter = 0;
+export let inputCounter = 0;
 let showScore = false;
 let showRules = false;
 export let xWon = 0;
 export let oWon = 0;
 export let endedDraw = 0;
+export let coordinatColumn;
+export let coordinatRow;
+let gameVSComputer = false;
+let computerDidTurn = false;
 let rules = `We play the game with the official rules and no modifications:
 - X places its mark first in the first round
 - The looser of the last game starts the game, which is then
@@ -41,42 +45,65 @@ export const rl = readline.createInterface({
 });
 
 // starts the game at the beginning
-playGame();
+chooseOpponent();
+
+// ask the player if he wants to play a computer or a human. Loop the question if the answer is not c or h
+function chooseOpponent(){
+    rl.question('You want to play against a computer (c) or a human (h):', (input) => {
+        if(input === 'c'){
+            gameVSComputer = true;
+            playVsComputer();
+        }
+        else if(input === 'h'){
+            gameVSComputer = false;
+            playVsComputer();
+        } else {
+            console.clear();
+            console.log('The input wasn´t correct. Try again.');
+            chooseOpponent();          
+        };   
+    });
+};
 
 // start the funktion to play the game. this functions is looped through inner functions until the game is not finished
-export function playGame() {
+function playGame() {
 
     // before the first round it will be explained where to find the rules and print an empty board
     firstRound();
 
-    // ask the player in the console at which position she / he will set the mark
-    rl.question(currentPlayer + ': ' + 'Please enter the position of your mark (Row:Column):', (input) => {
+    if (currentPlayer === 'O' && gameVSComputer === true) {
+        playVsComputer();
+    } else {
 
-        if (!showScore) {
-            // checks if the entered numbers are correct 
-            checkInput(input);
+        // ask the player in the console at which position she / he will set the mark
+        rl.question(currentPlayer + ': ' + 'Please enter the position of your mark (Row:Column):', (input) => {
 
-            if (inputCorrect) {
-                // take numbers from the input and sub 1 because the arrays starts by 0 and not 1.
-                let row = input[0] - 1;
-                let col = input[2] - 1;
+            if (!showScore) {
+                // checks if the entered numbers are correct 
+                checkInput(input);
 
-                // update Board
-                updateBoard(row, col);
+                if (inputCorrect) {
+                    // take numbers from the input and sub 1 because the arrays starts by 0 and not 1.
+                    let row = input[0] - 1;
+                    let col = input[2] - 1;
 
-                if (!fieldFilled) {
-                    // print game board
-                    printBoard();
+                    // update Board
+                    updateBoard(row, col);
 
-                    // checks for win and draw
-                    checkWinAndDraw();
+                    if (!fieldFilled) {
+                        // print game board
+                        printBoard();
 
-                    // loop the game until it´s finised
-                    gameLoop();
+                        // checks for win and draw
+                        checkWinAndDraw();
+
+                        // loop the game until it´s finised
+                        gameLoop();
+                    };
                 };
             };
-        };
-    });
+        });
+    };
 };
 
 // before the first round it will be explained where to find the rules and print an empty board.
@@ -102,7 +129,7 @@ export function printBoard() {
 };
 
 // check the input from rl.question, where player wants to set a mark
-function checkInput(input) {
+export function checkInput(input) {
 
     //checks if string length is correct
     checkInputLength(input);
@@ -148,14 +175,14 @@ Example: "2:2" places the X in the  middle center field`);
         playGame();
     }
     // checks if there is a : between the numbers
-     else if (input[1] != ':') {
-     console.clear();
-           console.error(`The inserted field is not valid. Try again:
-        Example: "2:2" places the X in the  middle center field`);
-         inputCorrect = false;
-         printBoard();
-         playGame();
-     }
+    else if (input[1] != ':') {
+        console.clear();
+        console.error(`The inserted field is not valid. Try again:
+Example: "2:2" places the X in the  middle center field`);
+        inputCorrect = false;
+        printBoard();
+        playGame();
+    }
     // set input correct so the rl.question can continue.
     else {
         inputCorrect = true;
@@ -168,6 +195,8 @@ function checkWinAndDraw() {
     //check for draw
     checkDraw();
 };
+
+
 
 // function to check if a player has won the game
 export function checkWin() {
@@ -277,6 +306,7 @@ export function newGame(text) {
 export function resetEverything() {
     gameWon = false;
     gameDraw = false;
+    computerDidTurn = false;
     switchPlayer();
     console.clear();
     movesCounter = 0;
@@ -330,6 +360,136 @@ Press "Enter" to continue`);
 });
 
 
+// User Storie 6, play vs a computer 
+
+function playVsComputer() {
+    gameVSComputer = true;
+    if (currentPlayer === 'X') {
+        playGame();
+    }
+    else {
+        // update Board
+        computerDidTurn = false;
+
+        // computerWinandLose checks for O if the computer has an possibilty to win
+        computerWinandLose('O');
+        if (!computerDidTurn) {
+             // computerWinandLose checks for X if the player has an possibilty to win
+            computerWinandLose('X');
+        }
+        if (!computerDidTurn) {
+            // create random coordinats and upload them to the board. If the field is already marked, the function is looped until it find an unmarked field. 
+           creatRandomCoordinats();
+        };
+
+        if (!fieldFilled) {
+            // print game board
+            printBoard();
+
+            // checks for win and draw
+            checkWinAndDraw();
+
+            // loop the game until it´s finised
+            gameLoop();
+        };
+    };
+};
+
+//  create random coordinats and upload them to the board. If the field is already marked, the function is looped until it find an unmarked field. 
+export function creatRandomCoordinats() { 
+    coordinatRow = Math.floor(Math.random() * 3);
+    coordinatColumn = Math.floor(Math.random() * 3);
+
+    if (board[coordinatRow][coordinatColumn] !== ' ') {
+        creatRandomCoordinats();
+    } else {
+        updateBoard(coordinatRow, coordinatColumn);
+    };
+};
+
+// function check computerWin, the variable player is used for X and O.
+function computerWinandLose(player) {
+    for (let i = 0; i < 3; i++) {
+        // check for horizontal wins
+        checkHorizontal(i, player);
+        // check for vertical wins
+       checkVertical(i, player);
+    };
+    // check for diagonal wins
+    checkDiagonal(player);
+};
+
+ // check for horizontal wins
+export function checkHorizontal(i, player){
+    if (board[i][0] === player && board[i][2] === player && board[i][1] === ' ' && !computerDidTurn) {
+        updateBoard(i, 1);
+        computerDidTurn = true;
+        return;
+    };
+    if (board[i][0] === player && board[i][1] === player && board[i][2] === ' ' && !computerDidTurn) {
+        updateBoard(i, 2)
+        computerDidTurn = true;
+        return;
+    };
+    if (board[i][1] === player && board[i][2] === player && board[i][0] === ' ' && !computerDidTurn) {
+        updateBoard(i, 0)
+        computerDidTurn = true;
+        return;
+    };
+};
+
+  // check for vertical wins
+export function checkVertical(i, player){
+    if (board[0][i] === player && board[2][i] === player && board[1][i] === ' ' && !computerDidTurn) {
+        updateBoard(1, i)
+        computerDidTurn = true;
+        return;
+    };
+    if (board[0][i] === player && board[1][i] === player && board[2][i] === ' ' && !computerDidTurn) {
+        updateBoard(2, i)
+        computerDidTurn = true;
+        return;
+    };
+    if (board[1][i] === player && board[2][i] === player && board[0][i] === ' ' && !computerDidTurn) {
+        updateBoard(0, i)
+        computerDidTurn = true;
+        return;
+    };
+}
+
+ // check for diagonal wins
+export function checkDiagonal(player){
+    if (board[0][0] === player && board[1][1] === player && board[2][2] === ' ' && !computerDidTurn) {
+        updateBoard(2, 2)
+        computerDidTurn = true;
+        return;
+    };
+    if (board[0][0] === player && board[2][2] === player && board[1][1] === ' ' && !computerDidTurn) {
+        updateBoard(1, 1)
+        computerDidTurn = true;
+        return;
+    };
+    if (board[1][1] === player && board[2][2] === player && board[0][0] === ' ' && !computerDidTurn) {
+        updateBoard(0, 0)
+        computerDidTurn = true;
+        return;
+    };
+    if (board[0][2] === player && board[2][0] === player && board[1][1] === ' ' && !computerDidTurn) {
+        updateBoard(1, 1)
+        computerDidTurn = true;
+        return;
+    };
+    if (board[1][1] === player && board[2][0] === player && board[0][2] === ' ' && !computerDidTurn) {
+        updateBoard(0, 2)
+        computerDidTurn = true;
+        return;
+    };
+    if (board[1][1] === player && board[0][2] === player && board[2][0] === ' ' && !computerDidTurn) {
+        updateBoard(2, 0)
+        computerDidTurn = true;
+        return;
+    };
+};
 
 
 
