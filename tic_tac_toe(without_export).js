@@ -49,6 +49,7 @@ chooseOpponent();
 
 // ask the player if he wants to play a computer or a human. Loop the question if the answer is not c or h
 function chooseOpponent() {
+    console.clear();
     rl.question('You want to play against a computer (c) or a human (h):', (input) => {
         if (input === 'c') {
             gameVSComputer = true;
@@ -56,10 +57,9 @@ function chooseOpponent() {
         }
         else if (input === 'h') {
             gameVSComputer = false;
-            playVsComputer();
+            playGame();
         } else {
             console.clear();
-            console.log('The input wasn´t correct. Try again.');
             chooseOpponent();
         };
     });
