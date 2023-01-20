@@ -1,0 +1,29 @@
+{
+  "name": "tic_tac_toe_challenge_amplimind",
+  "version": "1.0.0",
+  "description": "tic tac toe game played in the console",
+  "main": "tic_tac_toe.js",
+  "scripts": {
+    "test": "vitest --run --reporter verbose --globals",
+    "test:watch": "vitest",
+    "start": "http-server -c-1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FabianKalus/Tic-Tac-Toe-Challenge.git"
+  },
+  "author": "Fabian Kalus",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FabianKalus/Tic-Tac-Toe-Challenge/issues"
+  },
+  "homepage": "https://github.com/FabianKalus/Tic-Tac-Toe-Challenge#readme",
+  "devDependencies": {
+    "sinon": "^15.0.1",
+    "vitest": "^0.27.2"
+  },
+  "dependencies": {
+    "readline-sync": "^1.4.10",
+    "test-console": "^2.0.0"
+  }
+}
